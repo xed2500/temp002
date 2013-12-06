@@ -39,11 +39,11 @@ namespace CodeFirstTest
         {
             using (var db = new BloggingContext())
             {
-                var query = from b in db.Labels orderby b.Title select b;
+                var query = from l in db.WLists orderby l.Name select l;
                 Console.WriteLine("All items in the database:");
                 foreach (var item in query)
                 {
-                    Console.WriteLine(item.Title + " - " + item.Description);
+                    Console.WriteLine(item.Name + " - " + item.Description);
                 }
             }
         }
@@ -120,7 +120,7 @@ namespace CodeFirstTest
         public Guid CategoryId { get; set; }
         public virtual Category Category { get; set; }
 
-        public virtual List<Label> AttachedLabels { get; set; }
+        public virtual ICollection<Label> AttachedLabels { get; set; }
     }
 
     //[Table("Categories")]
@@ -132,15 +132,45 @@ namespace CodeFirstTest
         public virtual ICollection<TEntry> TEntries { get; set; }
     }
 
+    //[Table("WList")]
+    public class WList
+    {
+        [Key]
+        public Guid Id { get; set; }
+        [MaxLength(100), MinLength(1)]
+        public string Name { get; set; }
+        [MaxLength(5000)]
+        public string Description { get; set; }
+
+        public virtual ICollection<WListItem> Items { get; set; }//IEnumerable
+    }
+
+    //[Table("WListItem")]
+    public class WListItem
+    {
+        [Key]
+        public Guid Id { get; set; }
+        [MaxLength(100)]
+        public string Name { get; set; }
+        [MaxLength(300)]
+        public string Details { get; set; }
+
+        [ForeignKey("WList")]
+        public Guid WListId { get; set; }
+        public virtual WList WList { get; set; }
+    }
+
     public class BloggingContext : DbContext
     {
         public BloggingContext(string connStringName = "XDefaultConnection") : base(connStringName) { }
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Post> Posts { get; set; }
 
+        public DbSet<WList> WLists { get; set; }
+        public DbSet<WListItem> WListItems { get; set; }
+
         public DbSet<Label> Labels { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<TEntry> TEntries { get; set; }
     }
-
 }
